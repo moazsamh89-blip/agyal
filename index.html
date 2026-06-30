@@ -492,6 +492,20 @@ const isPostimagesPageLink = (url) => {
   return isPostimagesHost && !isDirectSubdomain;
 };
 
+/** اختيار غلاف مخصص للفئة العمرية (يعود للغلاف الأساسي لو المخصص فارغ) */
+const getCoverUrlForCat = (cov, cat) => {
+  if (!cov) return '';
+  const map = { children: cov.cover_children_url, teens: cov.cover_teens_url, adults: cov.cover_adults_url };
+  const specific = map[cat];
+  return formatImageUrl((specific && specific.trim()) ? specific : (cov.cover_url || ''));
+};
+
+/** هل الرابط ملف صوتي؟ */
+const isAudioUrl = (url) => {
+  if (!url) return false;
+  try { const p = new URL(url).pathname.toLowerCase(); return /\.(mp3|wav|ogg|m4a|aac|flac|wma|opus|webm)$/.test(p); } catch(_) { return false; }
+};
+
 /* ══════════════════════════
    BOOT
 ══════════════════════════ */
@@ -684,13 +698,11 @@ function covCard(c) {
   // Store cover data by id for safe retrieval
   _covCache[c.id] = c;
   const hv = c.video_url && c.video_url.trim();
-  const url = formatImageUrl(c.cover_url || '');
+  // استخدام الغلاف المخصص للفئة العمرية الحالية (أو الأساسي كبديل)
+  const url = getCoverUrlForCat(c, curCat);
 
   let imgH;
   if (url) {
-    imgH = document.createElement('img');
-    imgH.setAttribute('data-src', url); // will be set below
-    // We build HTML as string, use data attribute to avoid H() breaking URL
     imgH = `<img data-cover-id="${c.id}" alt="${H(c.title)}" loading="lazy"
       src="${url.replace(/"/g,'%22')}"
       onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='flex')">
@@ -719,15 +731,16 @@ async function openCov(c) {
   const bd = document.getElementById('cov-bd');
 
   // Natural cover image (contain, shows full image without cropping)
-  // Do NOT use H() on src — it breaks URLs with special chars
-  const imgHtml = c.cover_url ? `
+  // استخدام الغلاف المخصص للفئة العمرية الحالية
+  const _covUrl = getCoverUrlForCat(c, curCat);
+  const imgHtml = _covUrl ? `
     <div class="cov-img-w" id="cov-img-wrap">
       <img id="cov-main-img" alt="${H(c.title)}" onerror="document.getElementById('cov-img-wrap').style.display='none'">
     </div>` : '';
 
   // Inline video if cover has one
   const vidHtml = (c.video_url && c.video_url.trim())
-    ? `<div style="margin-bottom:1rem">${mkEmbed(c.title,null,c.video_url,'video',true)}</div>` : '';
+    ? `<div style="margin-bottom:1rem">${mkEmbed(c.title,null,c.video_url,'video',true,_covUrl)}</div>` : '';
 
   bd.innerHTML = `${imgHtml}
     ${c.description ? `<div class="cov-desc">${H(c.description)}</div>` : ''}
@@ -735,9 +748,9 @@ async function openCov(c) {
     <div class="st-load" style="padding:1.4rem 0"><div class="spin"></div></div>`;
 
   // Set src via JS property (never via attribute string) to avoid URL encoding issues
-  if (c.cover_url) {
+  if (_covUrl) {
     const mainImg = document.getElementById('cov-main-img');
-    if (mainImg) mainImg.src = formatImageUrl(c.cover_url);
+    if (mainImg) mainImg.src = _covUrl;
   }
 
   document.getElementById('cov-ov').classList.add('on');
@@ -794,27 +807,30 @@ async function fetchItems(c) {
       if (b.file_url)    fmts.push({ l:'قراءة / تحميل PDF', u:b.file_url,    t:'pdf',   icon:ico('pdf') });
       if (b.audio_url)   fmts.push({ l:'استماع صوتي',       u:b.audio_url,   t:'audio', icon:ico('audio') });
       if (b.youtube_url) fmts.push({ l:'مشاهدة على يوتيوب', u:b.youtube_url, t:'video', icon:ico('video') });
+      const _extUrl = b.external_url || '';
       items.push({ title:b.title, sub:b.author || '', icon:ico('book'),
         fn:() => { if (!fmts.length) { toast('لا يوجد محتوى لهذا الكتاب'); return; }
-          closeCM(); fmts.length===1 ? openP(b.title, null, fmts[0].u, fmts[0].t) : openFmtSel(b.title, fmts); }
+          closeCM(); fmts.length===1 ? openP(b.title, null, fmts[0].u, fmts[0].t, null, _extUrl) : openFmtSel(b.title, fmts); }
       });
     });
 
-  // ── anime_shows + episodes ──
+  // ── anime_shows + episodes (الحلقات ترث غلاف الأنمي) ──
   } else if (st === 'anime' || st === 'cartoon') {
+    // جلب الغلاف المناسب للفئة العمرية (يُستخدم كـ poster للمشغل)
+    const _coverPoster = getCoverUrlForCat(c, curCat);
     const { data:shows } = await SB.from('anime_shows').select('*').eq('cover_id', c.id).order('created_at', { ascending:false });
     for (const sh of (shows || [])) {
       if ((shows || []).length === 1) {
         // Single show → list episodes directly
         const { data:eps } = await SB.from('episodes').select('*').eq('show_id', sh.id).order('episode_number', { ascending:true });
         (eps || []).forEach(ep => items.push({ title:ep.title, sub:`الحلقة ${ep.episode_number}`, icon:ico('video'),
-          fn:() => { closeCM(); openP(ep.title, null, ep.video_url, 'video'); } }));
+          fn:() => { closeCM(); openP(ep.title, null, ep.video_url, 'video', _coverPoster, ep.external_url); } }));
       } else {
         items.push({ title:sh.title, sub:sh.description || '', icon:ico('video'),
           fn: async () => {
             const { data:eps } = await SB.from('episodes').select('*').eq('show_id', sh.id).order('episode_number', { ascending:true });
             refill(sh.title, (eps||[]).map(ep => ({ title:ep.title, sub:`الحلقة ${ep.episode_number}`, icon:ico('video'),
-              fn:() => { closeCM(); openP(ep.title, null, ep.video_url, 'video'); } })));
+              fn:() => { closeCM(); openP(ep.title, null, ep.video_url, 'video', _coverPoster, ep.external_url); } })));
           }
         });
       }
@@ -842,7 +858,7 @@ async function fetchItems(c) {
   } else if (st === 'religious_content') {
     const { data } = await SB.from('religious_content').select('*').eq('cover_id', c.id).order('created_at', { ascending:false });
     (data || []).forEach(rc => items.push({ title:rc.title, icon:ico('rel'),
-      fn:() => { closeCM(); openP(rc.title, rc.content_text, rc.media_url, rc.content_type || 'article'); } }));
+      fn:() => { closeCM(); openP(rc.title, rc.content_text, rc.media_url, rc.content_type || 'article', null, rc.external_url); } }));
   }
 
   return items;
@@ -854,7 +870,7 @@ function openStory(s) {
   const bd = document.getElementById('p-bd');
   let html = '';
   // Video if exists
-  if (s.video_url && s.video_url.trim()) html += mkEmbed(s.title, null, s.video_url, 'video', false);
+  if (s.video_url && s.video_url.trim()) html += mkEmbed(s.title, null, s.video_url, 'video', false, null, s.external_url);
   // Images gallery (stored as text[] in admin)
   const imgs = Array.isArray(s.images) ? s.images : (s.images ? String(s.images).split(',').map(i=>i.trim()).filter(Boolean) : []);
   if (imgs.length) {
@@ -896,60 +912,157 @@ function openFmtSel(title, fmts) {
 /* ══════════════════════════
    PLAYER
 ══════════════════════════ */
-function openP(title, text, url, type) {
+function openP(title, text, url, type, poster, externalUrl) {
   document.getElementById('p-ttl').textContent = title;
-  document.getElementById('p-bd').innerHTML = mkEmbed(title, text, url, type, false);
+  document.getElementById('p-bd').innerHTML = mkEmbed(title, text, url, type, false, poster, externalUrl);
   document.getElementById('pov').classList.add('on');
   document.body.style.overflow = 'hidden';
 }
 
-function mkEmbed(title, text, url, type, inline) {
+/** تحويل روابط الوسائط (مثل جوجل درايف و ون درايف) إلى روابط مباشرة للتشغيل */
+const formatMediaUrl = (url) => {
+  if (!url) return '';
+  
+  // روابط جوجل درايف
+  const driveFileRegex = /drive\.google\.com\/file\/d\/([^/]+)/;
+  const driveOpenRegex = /drive\.google\.com\/open\?id=([^&]+)/;
+  const driveUcRegex = /drive\.google\.com\/uc\?.*id=([^&]+)/;
+
+  let match = url.match(driveFileRegex);
+  if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  match = url.match(driveOpenRegex);
+  if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  match = url.match(driveUcRegex);
+  if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+
+  // روابط ون درايف الشخصية (OneDrive)
+  if (url.includes('onedrive.live.com/')) {
+    return url.replace('/redir?', '/download?').replace('/edit.aspx?', '/download?');
+  }
+
+  // روابط PixelDrain (تحويل صفحة المشاهدة /u/ إلى رابط الملف المباشر /api/file/)
+  const pdMatch = url.match(/pixeldrain\.com\/(?:u|api\/file)\/([a-zA-Z0-9_-]+)/);
+  if (pdMatch) {
+    return `https://pixeldrain.com/api/file/${pdMatch[1]}`;
+  }
+
+  return url;
+};
+
+/** إنشاء كود التضمين الرسمي لأرشيف الإنترنت (Internet Archive) */
+const getArchiveEmbed = (url, type) => {
+  const m = url.match(/archive\.org\/(?:details|embed|download)\/([a-zA-Z0-9_.-]+)/);
+  if (!m) return null;
+  const id = m[1];
+  if (type === 'pdf') {
+    return `<iframe src="https://archive.org/embed/${id}?ui=embed" allowfullscreen style="width:100%;aspect-ratio:4/3;border:none;border-radius:9px;background:#fff;"></iframe>`;
+  }
+  if (type === 'audio') {
+    return `<iframe src="https://archive.org/embed/${id}&playlist=1" allowfullscreen style="width:100%;height:120px;border:none;background:transparent;"></iframe>`;
+  }
+  // video / default
+  return `<iframe src="https://archive.org/embed/${id}" allowfullscreen allow="autoplay" style="width:100%;aspect-ratio:16/9;border:none;border-radius:9px;background:#000;"></iframe>`;
+};
+
+function mkEmbed(title, text, url, type, inline, poster, externalUrl) {
   const tc = inline ? 'var(--dark)' : 'rgba(255,255,255,.82)';
+  const extBtn = (externalUrl && externalUrl.trim()) ? lnkB(externalUrl, 'فتح في الموقع الأصلي') : '';
   if (!url && !text) return `<p style="color:${tc};text-align:center;padding:1.4rem">لا يوجد محتوى متاح.</p>`;
 
-  if (type === 'video' || type === 'youtube') {
-    if (url) {
-      // YouTube
-      const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
-      if (yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=${inline?0:1}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-        ${inline?'':lnkB(url,'مشاهدة على يوتيوب')}`;
-      // PixelDrain
-      if (url.includes('pixeldrain.com/u/')) {
-        const pid = url.match(/pixeldrain\.com\/u\/([a-zA-Z0-9_-]+)/)?.[1];
-        const api = pid ? `https://pixeldrain.com/api/file/${pid}` : url;
-        const dl  = pid ? `https://pixeldrain.com/api/file/${pid}?download` : url;
-        return `${inline?'':' <div class="pd-note">⚡ فيديو عبر PixelDrain — إذا لم يُشغَّل اضغط تحميل.</div>'}
-          <video controls ${inline?'':'autoplay'} src="${H(api)}"></video>
-          ${inline?'':dlB(dl,'تحميل الفيديو')}`;
+  // تنسيق الرابط لضمان إمكانية تشغيله مباشرة
+  const formattedUrl = formatMediaUrl(url);
+
+  // الكشف التلقائي: لو الرابط ملف صوتي بغض النظر عن type
+  if (formattedUrl && isAudioUrl(formattedUrl) && type !== 'video') {
+    type = 'audio';
+  }
+
+  // معالجة روابط أرشيف الإنترنت العامة (details أو embed غير المباشرة)
+  if (formattedUrl && formattedUrl.includes('archive.org/')) {
+    let isDirectFile = false;
+    try {
+      isDirectFile = /\.(mp3|wav|ogg|m4a|aac|mp4|webm|pdf)$/i.test(new URL(formattedUrl).pathname);
+    } catch(_) {}
+
+    if (!isDirectFile) {
+      const embedHtml = getArchiveEmbed(formattedUrl, type);
+      if (embedHtml) {
+        return `${embedHtml}
+          ${inline?'':dlB(formattedUrl,'تحميل أو فتح في موقع الأرشيف')}
+          ${extBtn}`;
       }
-      // Generic mp4 / direct link
-      return `<video controls ${inline?'':'autoplay'} src="${H(url)}"></video>
-        ${inline?'':dlB(url,'تحميل الفيديو')}`;
+    }
+  }
+
+  if (type === 'video' || type === 'youtube') {
+    if (formattedUrl) {
+      // YouTube (استخدام نطاق nocookie لتفادي قيود الحظر والخطأ 152)
+      const yt = formattedUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+      if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=${inline?0:1}" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        <div style="margin-top:0.5rem;font-size:0.78rem;color:rgba(255,255,255,0.6);text-align:center;line-height:1.4;">
+          ℹ️ إذا ظهر خطأ "غير متوفر" أو "153" فذلك يعني أن صاحب الفيديو منع تشغيله خارج موقع يوتيوب، أو أن الفيديو يتطلب تسجيلاً للدخول.
+        </div>
+        ${inline?'':lnkB(formattedUrl,'مشاهدة على يوتيوب')}
+        ${extBtn}`;
+      // PixelDrain (دعم /u/ و /api/file/)
+      const pdMatch = formattedUrl.match(/pixeldrain\.com\/(?:u|api\/file)\/([a-zA-Z0-9_-]+)/);
+      if (pdMatch) {
+        const pid = pdMatch[1];
+        const api = `https://pixeldrain.com/api/file/${pid}`;
+        const dl  = `https://pixeldrain.com/api/file/${pid}?download`;
+        const posterAttr = poster ? ` poster="${poster.replace(/"/g,'%22')}"` : '';
+        return `${inline?'':' <div class="pd-note">⚡ فيديو عبر PixelDrain — إذا لم يُشغَّل اضغط تحميل.</div>'}
+          <div style="position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:9px; overflow:hidden;">
+            <video controls playsinline${posterAttr} src="${H(api)}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; outline:none; border:none;"></video>
+          </div>
+          <div style="margin-top:0.5rem;font-size:0.78rem;color:rgba(255,255,255,0.5);text-align:center;">
+            ⚠️ تنبيه: يدعم المشغل صيغ MP4/WebM فقط. إذا كانت صيغة الفيديو MKV أو AVI فلن يظهر محتوى ويرجى تحميله للتشغيل.
+          </div>
+          ${inline?'':dlB(dl,'تحميل الفيديو')}
+          ${extBtn}`;
+      }
+      // Generic mp4 / direct link / OneDrive / Archive.org direct download
+      const posterAttr2 = poster ? ` poster="${poster.replace(/"/g,'%22')}"` : '';
+      return `<div style="position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:9px; overflow:hidden;">
+          <video controls playsinline${posterAttr2} src="${H(formattedUrl)}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; outline:none; border:none;"></video>
+        </div>
+        <div style="margin-top:0.5rem;font-size:0.78rem;color:rgba(255,255,255,0.5);text-align:center;">
+          ⚠️ تنبيه: يدعم المشغل صيغ MP4/WebM فقط. إذا كانت صيغة الفيديو MKV أو AVI فلن يظهر محتوى ويرجى تحميله للتشغيل.
+        </div>
+        ${inline?'':dlB(formattedUrl,'تحميل الفيديو')}
+        ${extBtn}`;
     }
   }
 
   if (type === 'audio') {
+    let dlLink = formattedUrl;
+    if (dlLink && dlLink.includes('pixeldrain.com/api/file/') && !dlLink.includes('?download')) {
+      dlLink += '?download';
+    }
     return `<div style="text-align:center;padding:${inline?'.7rem':'1.7rem'} 0">
       <div style="font-size:2.7rem;margin-bottom:.5rem">🎧</div>
-      <audio controls src="${H(url)}" style="width:100%;max-width:360px"></audio>
-      ${inline?'':dlB(url,'تحميل الملف الصوتي')}
+      <p style="color:${tc};margin-bottom:.6rem;font-size:.88rem;font-weight:600">${H(title)}</p>
+      <audio controls src="${H(formattedUrl)}" style="width:100%;max-width:420px"></audio>
+      ${inline?'':dlB(dlLink,'تحميل الملف الصوتي')}
+      ${extBtn}
     </div>`;
   }
 
   if (type === 'pdf' || type === 'file') {
-    return `<div style="text-align:center;padding:1.7rem 0">
-      <div style="font-size:2.9rem;margin-bottom:.65rem">📄</div>
-      <p style="color:${tc};margin-bottom:1rem;font-size:.86rem">ملف PDF — اضغط للفتح أو التحميل</p>
-      ${lnkB(url,'فتح / قراءة الملف')} ${dlB(url,'تحميل الملف')}
+    // تشغيل PDF المباشر داخل iframe
+    return `<div style="text-align:center;padding:${inline?'0':'1rem 0'}">
+      <iframe src="${H(formattedUrl)}" style="width:100%;aspect-ratio:4/3;border:none;border-radius:9px;background:#fff;margin-bottom:0.8rem;"></iframe>
+      ${inline?'':lnkB(formattedUrl,'فتح الملف في نافذة جديدة')} ${inline?'':dlB(formattedUrl,'تحميل الملف')}
+      ${extBtn}
     </div>`;
   }
 
   if (type === 'article' || type === 'text') {
     return `${text ? `<div class="p-txt" style="color:${tc}">${H(text)}</div>` : ''}
-      ${url ? `<div style="margin-top:.7rem">${lnkB(url,'فتح الرابط')}</div>` : ''}`;
+      ${formattedUrl ? `<div style="margin-top:.7rem">${lnkB(formattedUrl,'فتح الرابط')}</div>` : ''}`;
   }
 
-  if (url) return `<div style="text-align:center;padding:1.7rem 0">${lnkB(url,'فتح المحتوى')}</div>`;
+  if (formattedUrl) return `<div style="text-align:center;padding:1.7rem 0">${lnkB(formattedUrl,'فتح المحتوى')}</div>`;
   if (text) return `<div class="p-txt" style="color:${tc}">${H(text)}</div>`;
   return `<p style="color:${tc};text-align:center;padding:1.4rem">لا يوجد محتوى.</p>`;
 }
@@ -1004,7 +1117,7 @@ async function runSearch(q) {
     // Store in cache and build cards
     data.forEach(r => { _covCache[r.id] = r; });
     res.innerHTML = data.map(r => {
-      const cu = formatImageUrl(r.cover_url || r.coverUrl || '');
+      const cu = getCoverUrlForCat(r, curCat);
       const imgH = cu
         ? `<img alt="${H(r.title)}" loading="lazy" src="${cu.replace(/"/g,'%22')}" onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='flex')"><div class="ct-ph" style="display:none">${phSVG()}</div>`
         : `<div class="ct-ph">${phSVG()}</div>`;
