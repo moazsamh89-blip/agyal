@@ -77,11 +77,27 @@ nav{background:var(--navy);position:sticky;top:0;z-index:300;box-shadow:0 2px 10
 .nav-links{display:flex;gap:2px;list-style:none;flex:1;justify-content:center}
 .nav-links a{color:rgba(255,255,255,.74);text-decoration:none;padding:6px 14px;border-radius:8px;font-size:.89rem;transition:.17s;cursor:pointer;white-space:nowrap}
 .nav-links a:hover,.nav-links a.on{background:rgba(255,255,255,.13);color:#fff}
-.srch-box{position:relative;flex-shrink:0}
-.srch-box input{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);border-radius:24px;color:#fff;padding:7px 13px 7px 36px;font-family:'Tajawal',sans-serif;font-size:.87rem;width:150px;outline:none;transition:.25s}
-.srch-box input::placeholder{color:rgba(255,255,255,.42)}
-.srch-box input:focus{width:200px;background:rgba(255,255,255,.16);border-color:var(--gold)}
-.srch-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:rgba(255,255,255,.5);fill:none;pointer-events:none}
+.srch-box{position:relative;flex-shrink:0;display:flex;align-items:center}
+.srch-box input{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);border-radius:24px;color:#fff;padding:7px 13px 7px 36px;font-family:'Tajawal',sans-serif;font-size:.87rem;width:160px;outline:none;transition:.25s}
+.srch-box input::placeholder{color:rgba(255,255,255,.45)}
+.srch-box input:focus{width:215px;background:rgba(255,255,255,.18);border-color:var(--gold);box-shadow:0 0 10px rgba(252,163,17,.3)}
+.srch-btn{position:absolute;left:5px;top:50%;transform:translateY(-50%);background:none;border:none;padding:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;transition:all .18s;z-index:2}
+.srch-btn:hover{background:rgba(252,163,17,.25)}
+.srch-btn:hover .srch-ico{stroke:var(--gold)}
+.srch-ico{width:15px;height:15px;stroke:rgba(255,255,255,.7);fill:none;transition:stroke .18s}
+
+/* Autocomplete live popup */
+.srch-dropdown{display:none;position:absolute;top:calc(100% + 8px);left:0;width:320px;max-width:92vw;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);border:1px solid var(--border);z-index:1000;max-height:420px;overflow-y:auto;direction:rtl;padding:8px 0}
+.srch-dropdown.open{display:block}
+.srch-drop-sec-title{font-size:.76rem;font-weight:800;color:var(--navy);background:rgba(10,25,47,.05);padding:6px 12px;margin:4px 0 2px;display:flex;align-items:center;justify-content:space-between}
+.srch-drop-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background .15s;text-decoration:none;color:var(--navy)}
+.srch-drop-item:hover{background:rgba(252,163,17,.12)}
+.srch-drop-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid var(--gold)}
+.srch-drop-thumb{width:32px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.srch-drop-info{flex:1;min-width:0}
+.srch-drop-name{font-size:.85rem;font-weight:700;color:var(--navy);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srch-drop-sub{font-size:.74rem;color:var(--muted);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srch-drop-all-btn{display:block;width:calc(100% - 16px);text-align:center;padding:9px;font-size:.82rem;font-weight:800;color:var(--gold);background:var(--navy);border:none;border-radius:8px;cursor:pointer;margin:6px auto 2px}
 
 /* Auth Nav Section */
 .nav-auth{display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -415,6 +431,329 @@ footer{background:var(--navy);color:#fff;margin-top:auto !important;padding:3.5r
 .ft-copy{font-size:.86rem;color:rgba(255,255,255,.8);margin-bottom:4px}
 .ft-copy strong{color:var(--gold)}
 .ft-sub{font-size:.78rem;color:rgba(255,255,255,.5)}
+
+/* ══ MOBILE BOTTOM NAVIGATION BAR (App Experience) ══ */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(13, 27, 62, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 9999;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px calc(env(safe-area-inset-bottom) / 2);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.4);
+}
+
+.mob-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  gap: 3px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  min-width: 58px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mob-nav-item:active {
+  transform: scale(0.92);
+}
+
+.mob-nav-item.active {
+  color: var(--gold);
+}
+
+.mob-nav-item.active svg {
+  stroke: var(--gold);
+  filter: drop-shadow(0 0 6px rgba(252, 163, 17, 0.5));
+}
+
+.mob-nav-icon-badge {
+  position: relative;
+  display: inline-flex;
+}
+
+.mob-pulse-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+/* ══ MOBILE SECTIONS BOTTOM SHEET ══ */
+.sections-sheet-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 42, 0.68);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 10000;
+}
+
+.sections-sheet-backdrop.open {
+  display: block;
+}
+
+.sections-bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 82vh;
+  background: #ffffff;
+  border-radius: 22px 22px 0 0;
+  z-index: 10001;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35);
+  padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  transform: translateY(105%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  direction: rtl;
+}
+
+.sections-bottom-sheet.open {
+  transform: translateY(0);
+}
+
+.sections-sheet-drag-handle {
+  width: 44px;
+  height: 5px;
+  background: #cbd5e1;
+  border-radius: 4px;
+  margin: 0 auto 12px;
+}
+
+.sections-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sections-sheet-close {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.sections-sheet-sub {
+  color: var(--muted);
+  font-size: 0.84rem;
+  margin: 8px 0 14px;
+}
+
+.sections-sheet-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.sections-sheet-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  text-align: start;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  width: 100%;
+}
+
+.sections-sheet-card:active {
+  transform: scale(0.98);
+  background: rgba(252, 163, 17, 0.08);
+  border-color: var(--gold);
+}
+
+.sheet-card-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+}
+
+.sheet-card-info strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--navy);
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.sheet-card-info small {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+/* ══ ABOUT PAGE FOOTER INFO CARD ══ */
+.about-footer-card {
+  background: linear-gradient(135deg, #0b1a3a 0%, #14213d 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 2rem 1.6rem;
+  margin-top: 2.5rem;
+  box-shadow: 0 10px 30px rgba(11, 26, 58, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.about-ft-head {
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 1.4rem;
+}
+
+.about-ft-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.about-ft-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.about-ft-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.about-ft-sub {
+  margin: 4px 0 0;
+  font-size: 0.86rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.about-ft-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.6rem;
+  margin-bottom: 1.6rem;
+}
+
+.about-ft-col h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin: 0 0 10px;
+}
+
+.about-ft-col p {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.about-ft-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.about-ft-links li a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.86rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.about-ft-links li a:hover {
+  color: var(--gold);
+  transform: translateX(-3px);
+}
+
+.about-ft-links li a svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--gold);
+  fill: none;
+}
+
+.about-ft-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.about-ft-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 1.2rem;
+  text-align: center;
+}
+
+.about-ft-copy {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.about-ft-meta {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 768px) {
+  .about-ft-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ══ OVERLAY & MODAL FIX (تحديد العمر والقسم لا يظهر إلا بعد تسجيل الدخول لأول مرة) ══ */
 .ov {
@@ -1081,11 +1420,10 @@ footer{background:var(--navy);color:#fff;margin-top:auto !important;padding:3.5r
   .form-row { grid-template-columns: 1fr; gap: 0.8rem; }
   .vol-form-wrap { padding: 1.4rem 14px; }
 
-  /* Footer */
-  footer { padding: 2.8rem 14px 1.5rem; }
-  .ft-main { grid-template-columns: 1fr; gap: 2rem; }
-  .ft-acts { flex-direction: column; gap: 8px; width: 100%; }
-  .ft-act { width: 100%; justify-content: center; }
+  /* App-like Mobile Feel: Desktop footer hidden on phones/tablets, bottom safe area padding */
+  footer { display: none !important; }
+  body { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
+  .mobile-bottom-nav { display: flex !important; }
 }
 
 /* SMARTPHONES UNDER 600px */
@@ -1216,8 +1554,11 @@ footer{background:var(--navy);color:#fff;margin-top:auto !important;padding:3.5r
       <li><a onclick="showAbout()" id="nl-ab">عن المنصة والتطوع</a></li>
     </ul>
     <div class="srch-box">
-      <svg class="srch-ico" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="srch" placeholder="بحث سريع…" oninput="onSearch(this.value)">
+      <button type="button" class="srch-btn" onclick="openSmartSearchView(document.getElementById('srch').value)" title="بحث ذكي في المبدعين والأعمال" aria-label="بحث ذكي">
+        <svg class="srch-ico" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+      <input type="text" id="srch" placeholder="بحث ذكي في المبدعين والأعمال…" oninput="onSearch(this.value)" onfocus="onSearchFocus()" onkeydown="if(event.key==='Enter')openSmartSearchView(this.value)">
+      <div class="srch-dropdown" id="srch-dropdown"></div>
     </div>
     
     <!-- User Login & Profile Box -->
@@ -1623,6 +1964,57 @@ footer{background:var(--navy);color:#fff;margin-top:auto !important;padding:3.5r
         </button>
       </form>
     </div>
+
+    <!-- ══ PLATFORM INFO, CONTACT & RIGHTS (Transferred from footer) ══ -->
+    <div class="about-footer-card" id="about-footer-info">
+      <div class="about-ft-head">
+        <div class="about-ft-brand">
+          <img src="/logo.png" alt="أجيال الإيمان" class="about-ft-logo" onerror="this.onerror=null;this.src='logo.png';">
+          <div>
+            <h3 class="about-ft-title" id="ab-ft-name">أجيال الإيمان</h3>
+            <p class="about-ft-sub">منظومة إسلامية رائدة لحماية الفطرة وصناعة البديل الترفيهي والقيمي النقي</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-ft-grid">
+        <div class="about-ft-col">
+          <h4>🌟 رسالتنا ومبادئنا</h4>
+          <p>أجيال الإيمان مشروع وقفي هادف يسعى لتقديم محتوى رسومي وقصصي ومرئي يواكب العصر ويغرس الفضيلة والاعتزاز بالهوية الإسلامية بدون شوائب أو مشاهد خادشة.</p>
+          <div class="about-ft-acts" id="ab-ft-acts">
+            <a class="ft-act contact" id="ab-ft-contact" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>تواصل معنا</span>
+            </a>
+            <a class="ft-act donate" id="ab-ft-donate" onclick="showAbout('#donations')">
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span>طرق الدعم</span>
+            </a>
+            <a class="ft-act volunteer" id="ab-ft-volunteer" onclick="showAbout('#volunteer')">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>تطوع معنا</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="about-ft-col">
+          <h4>⚡ روابط سريعة للمحتوى</h4>
+          <ul class="about-ft-links">
+            <li><a onclick="goHome()"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M5 12h14"/></svg>الصفحة الرئيسية</a></li>
+            <li><a onclick="openSectionFromSheet('anime')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M5 12h14"/></svg>الأنمي والكرتون النقي</a></li>
+            <li><a onclick="openSectionFromSheet('manga')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M5 12h14"/></svg>المانجا والمانهوا الهادفة</a></li>
+            <li><a onclick="openSectionFromSheet('novel')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M5 12h14"/></svg>الروايات والقصص المصورة</a></li>
+            <li><a onclick="openSectionFromSheet('courses')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M5 12h14"/></svg>الكورسات والدروس التعليمية</a></li>
+            <li><a onclick="openMyContent()"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M5 12h14"/></svg>المحتوى المخصص بحسب العمر والجنس</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="about-ft-bottom">
+        <p class="about-ft-copy">© <span class="ab-yr">2026</span> <strong id="ab-copy-name">أجيال الإيمان</strong> — جميع الحقوق محفوظة</p>
+        <p class="about-ft-meta">منظومة غير ربحية هادفة لحماية الفطرة وصناعة البديل الإسلامي النقي للأجيال القادمة</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1715,11 +2107,36 @@ footer{background:var(--navy);color:#fff;margin-top:auto !important;padding:3.5r
   </div>
 </div>
 
-<!-- ══ SEARCH VIEW ══ -->
+<!-- ══ SMART SEARCH VIEW ══ -->
 <div class="view" id="view-srch">
   <div class="wrap">
-    <h2 class="sec-t">نتائج البحث <span class="bdg" id="srch-cnt">0</span></h2>
-    <div id="srch-res" class="cg"></div>
+    <div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 class="sec-t" style="margin-bottom:4px;">🔍 البحث الذكي في المنصة <span class="bdg" id="srch-cnt">0</span></h2>
+        <p style="font-size:0.88rem;color:var(--muted);margin:0;" id="srch-query-text">ابحث عن أي مبدع أو عمل أو مؤلف أو تخصص</p>
+      </div>
+      <button type="button" class="btn-back-creator" onclick="goHome()" style="background:var(--navy);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:0.85rem;cursor:pointer;">
+        العودة للرئيسية 🏠
+      </button>
+    </div>
+
+    <!-- ══ MATCHING CREATORS SECTION ══ -->
+    <div id="srch-creators-sec" style="margin-bottom:2.2rem;display:none;">
+      <h3 style="display:flex;align-items:center;gap:8px;font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:1rem;border-bottom:2px solid rgba(252,163,17,0.3);padding-bottom:8px;">
+        <span>✨ حسابات المبدعين وصناع المحتوى</span>
+        <span class="bdg" id="srch-creators-cnt">0</span>
+      </h3>
+      <div id="srch-creators-res" class="team-grid"></div>
+    </div>
+
+    <!-- ══ MATCHING WORKS / COVERS SECTION ══ -->
+    <div id="srch-works-sec">
+      <h3 style="display:flex;align-items:center;gap:8px;font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:1rem;border-bottom:2px solid rgba(252,163,17,0.3);padding-bottom:8px;">
+        <span>📚 الأعمال والقصص والإنتاجات</span>
+        <span class="bdg" id="srch-works-cnt">0</span>
+      </h3>
+      <div id="srch-res" class="cg"></div>
+    </div>
   </div>
 </div>
 
@@ -2034,6 +2451,119 @@ footer{background:var(--navy);color:#fff;margin-top:auto !important;padding:3.5r
     <p class="ft-sub">محتوى إسلامي هادف · يُزيل الشبهات من الكرتون والأنمي · مبني بحب لخدمة الأمة</p>
   </div>
 </footer>
+
+<!-- ══ MOBILE BOTTOM NAVIGATION BAR (App Experience) ══ -->
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="شريط التنقل السفلي">
+  <button type="button" class="mob-nav-item active" id="mob-tab-home" onclick="goHome(); updateMobileNavActive('home');">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span>الرئيسية</span>
+  </button>
+
+  <button type="button" class="mob-nav-item" id="mob-tab-sections" onclick="toggleSectionsSheet();">
+    <div class="mob-nav-icon-badge">
+      <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span class="mob-pulse-dot"></span>
+    </div>
+    <span>الأقسام</span>
+  </button>
+
+  <button type="button" class="mob-nav-item" id="mob-tab-content" onclick="openMyContent(); updateMobileNavActive('content');">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span>محتواي</span>
+  </button>
+
+  <button type="button" class="mob-nav-item" id="mob-tab-creators" onclick="showAbout('#team-grid-container'); updateMobileNavActive('creators');">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    <span>المبدعين</span>
+  </button>
+
+  <button type="button" class="mob-nav-item" id="mob-tab-about" onclick="showAbout(); updateMobileNavActive('about');">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="16" x2="12" y2="12"/>
+      <line x1="12" y1="8" x2="12.01" y2="8"/>
+    </svg>
+    <span>عنا</span>
+  </button>
+</nav>
+
+<!-- ══ MOBILE SECTIONS BOTTOM SHEET (App Experience) ══ -->
+<div class="sections-sheet-backdrop" id="sections-sheet-backdrop" onclick="closeSectionsSheet()"></div>
+<div class="sections-bottom-sheet" id="sections-bottom-sheet">
+  <div class="sections-sheet-drag-handle"></div>
+  <div class="sections-sheet-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:1.3rem;">📂</span>
+      <h3 style="margin:0;font-size:1.1rem;font-weight:800;color:var(--navy);">أقسام وتصنيفات المنصة</h3>
+    </div>
+    <button type="button" class="sections-sheet-close" onclick="closeSectionsSheet()" aria-label="إغلاق">✕</button>
+  </div>
+  <p class="sections-sheet-sub">اختر القسم لتصفح كل الأعمال النقية المتاحة:</p>
+
+  <div class="sections-sheet-grid">
+    <button type="button" class="sections-sheet-card" onclick="openSectionFromSheet('anime')">
+      <span class="sheet-card-icon">🎬</span>
+      <div class="sheet-card-info">
+        <strong>الأنمي والكرتون</strong>
+        <small>مشاهدة مسلسلات وأفلام كرتون نقية</small>
+      </div>
+    </button>
+    <button type="button" class="sections-sheet-card" onclick="openSectionFromSheet('manga')">
+      <span class="sheet-card-icon">📖</span>
+      <div class="sheet-card-info">
+        <strong>المانجا والمانهوا</strong>
+        <small>قراءة فصول المانجا العربية الهادفة</small>
+      </div>
+    </button>
+    <button type="button" class="sections-sheet-card" onclick="openSectionFromSheet('novel')">
+      <span class="sheet-card-info">📜</span>
+      <div class="sheet-card-info">
+        <strong>الروايات والقصص</strong>
+        <small>روايات خيالية وقيمية مشوقة</small>
+      </div>
+    </button>
+    <button type="button" class="sections-sheet-card" onclick="openSectionFromSheet('books')">
+      <span class="sheet-card-icon">📚</span>
+      <div class="sheet-card-info">
+        <strong>الكتب والمجلات</strong>
+        <small>كتيبات ومجلات إسلامية تربوية</small>
+      </div>
+    </button>
+    <button type="button" class="sections-sheet-card" onclick="openSectionFromSheet('courses')">
+      <span class="sheet-card-icon">🎓</span>
+      <div class="sheet-card-info">
+        <strong>الكورسات التعليمية</strong>
+        <small>دورات في الرسم والبرمجة والقيم</small>
+      </div>
+    </button>
+    <button type="button" class="sections-sheet-card" onclick="openSectionFromSheet('cartoon_stories')">
+      <span class="sheet-card-icon">🎨</span>
+      <div class="sheet-card-info">
+        <strong>القصص المصورة</strong>
+        <small>قصص كرتونية مصورة للأطفال والناشئة</small>
+      </div>
+    </button>
+    <button type="button" class="sections-sheet-card" onclick="openSectionFromSheet('religious_content')">
+      <span class="sheet-card-icon">🕌</span>
+      <div class="sheet-card-info">
+        <strong>ديني ومعرفي</strong>
+        <small>رد على الشبهات، أحاديث، وثقافة إسلامية</small>
+      </div>
+    </button>
+  </div>
+</div>
 
 <script>
 /* ══════════════════════════════════════════════════
@@ -2598,11 +3128,13 @@ function na(id) {
 function goHome() {
   window.location.hash = '#home';
   sv('view-home'); na('nl-h');
+  if (typeof updateMobileNavActive === 'function') updateMobileNavActive('home');
   document.getElementById('srch').value = '';
   document.getElementById('nav-links').style.display = '';
 }
 
 function openMyContent() {
+  if (typeof updateMobileNavActive === 'function') updateMobileNavActive('content');
   if (!currentUser) {
     toast('يرجى تسجيل الدخول بحساب جوجل أولاً لتخصيص محتواك الآمن');
     loginWithGoogle();
@@ -2658,6 +3190,13 @@ function showAbout(anchor) {
   window.location.hash = '#about';
   sv('view-about');
   na('nl-ab');
+  if (typeof updateMobileNavActive === 'function') {
+    if (anchor && anchor.includes('team')) {
+      updateMobileNavActive('creators');
+    } else {
+      updateMobileNavActive('about');
+    }
+  }
   loadStaffShowcase();
   loadDynamicVolunteerFields();
   if (anchor) {
@@ -4078,35 +4617,428 @@ function closePM(e) {
   document.body.style.overflow = '';
 }
 
-function onSearch(v) {
-  clearTimeout(srchT);
-  if (!v.trim()) { goHome(); return; }
-  sv('view-srch'); na(null);
-  document.getElementById('srch-res').innerHTML = `<div class="st-load"><div class="spin"></div></div>`;
-  document.getElementById('srch-cnt').textContent = '…';
-  srchT = setTimeout(() => runSearch(v.trim()), 400);
+/* ══════════════════════════════════════════════════
+   SMART ARABIC SEARCH & CREATORS SHOWCASE
+   (بحث ذكي متقدم يدعم تطبيع الحروف العربية وإبراز المبدعين)
+   ══════════════════════════════════════════════════ */
+function normalizeArabic(text) {
+  if (!text) return '';
+  return String(text)
+    .trim()
+    .toLowerCase()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/[ؤئ]/g, 'ء')
+    .replace(/[\u064B-\u0652]/g, '')
+    .replace(/[\u0640]/g, '');
 }
 
-async function runSearch(q) {
-  const res = document.getElementById('srch-res');
+let _cachedCreators = null;
+let _cachedCovers = null;
+let _cacheTime = 0;
+
+async function getSearchData() {
+  const now = Date.now();
+  if (_cachedCreators && _cachedCovers && (now - _cacheTime < 60000)) {
+    return { creators: _cachedCreators, covers: _cachedCovers };
+  }
   try {
-    const snap = await db.collection('covers').get();
-    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const term = q.trim().toLowerCase();
-    const data = all.filter(r =>
-      (r.title && String(r.title).toLowerCase().includes(term)) ||
-      (r.description && String(r.description).toLowerCase().includes(term))
-    );
-    if (!data.length) {
-      document.getElementById('srch-cnt').textContent = '0';
-      res.innerHTML = `<div class="st-mt" style="grid-column:1/-1">لا توجد نتائج لـ "<strong>${H(q)}</strong>"</div>`;
-      return;
-    }
-    document.getElementById('srch-cnt').textContent = data.length;
-    data.forEach(r => { _covCache[r.id] = r; });
-    res.innerHTML = data.map(covCard).join('');
+    const [cSnap, sSnap] = await Promise.all([
+      db.collection('covers').get(),
+      db.collection('staff_members').where('is_active', '==', true).get()
+    ]);
+    _cachedCovers = cSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _cachedCreators = sSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _cacheTime = now;
+    return { creators: _cachedCreators, covers: _cachedCovers };
   } catch(e) {
-    res.innerHTML = `<div class="st-er" style="grid-column:1/-1">خطأ: ${H(e.message)}</div>`;
+    console.error('Search data fetch error:', e);
+    return { creators: _cachedCreators || [], covers: _cachedCovers || [] };
+  }
+}
+
+function openSmartSearchView(q) {
+  const query = (q !== undefined ? q : (document.getElementById('srch') ? document.getElementById('srch').value : '')).trim();
+  closeSearchDropdown();
+  window.location.hash = '#search';
+  sv('view-srch');
+  na(null);
+  
+  const srchInput = document.getElementById('srch');
+  if (srchInput && srchInput.value !== query) {
+    srchInput.value = query;
+  }
+  
+  if (!query) {
+    loadDefaultSmartSearch();
+  } else {
+    runSmartSearch(query);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function loadDefaultSmartSearch() {
+  const queryText = document.getElementById('srch-query-text');
+  if (queryText) queryText.textContent = 'استكشف مبدعي وصناع محتوى أجيال الإيمان وكافة الإنتاجات';
+  
+  const creatorsSec = document.getElementById('srch-creators-sec');
+  const creatorsRes = document.getElementById('srch-creators-res');
+  const creatorsCnt = document.getElementById('srch-creators-cnt');
+  const worksSec = document.getElementById('srch-works-sec');
+  const worksRes = document.getElementById('srch-res');
+  const worksCnt = document.getElementById('srch-works-cnt');
+  const totalCnt = document.getElementById('srch-cnt');
+  
+  if (creatorsRes) creatorsRes.innerHTML = `<div class="st-load" style="grid-column:1/-1"><div class="spin"></div><p>جارٍ تحميل حسابات المبدعين…</p></div>`;
+  if (worksRes) worksRes.innerHTML = `<div class="st-load" style="grid-column:1/-1"><div class="spin"></div></div>`;
+  
+  const { creators, covers } = await getSearchData();
+  
+  if (creators && creators.length > 0) {
+    if (creatorsSec) creatorsSec.style.display = 'block';
+    if (creatorsCnt) creatorsCnt.textContent = creators.length;
+    if (creatorsRes) {
+      creatorsRes.innerHTML = creators.map(m => renderCreatorSearchCard(m)).join('');
+    }
+  } else {
+    if (creatorsSec) creatorsSec.style.display = 'none';
+  }
+  
+  let filteredCovers = covers || [];
+  if (!window.isStaff && curCat !== 'all') {
+    filteredCovers = filteredCovers.filter(c => {
+      if (!c.category) return true;
+      if (Array.isArray(c.category)) return c.category.includes(curCat);
+      return String(c.category).includes(curCat);
+    });
+  }
+  if (!window.isStaff && curGender !== 'all') {
+    filteredCovers = filteredCovers.filter(c => {
+      if (!c.target_gender || c.target_gender === 'both' || c.target_gender === 'all') return true;
+      if (curGender === 'boy') return c.target_gender !== 'girls';
+      if (curGender === 'girl') return c.target_gender !== 'boys';
+      return true;
+    });
+  }
+  
+  if (worksCnt) worksCnt.textContent = filteredCovers.length;
+  if (totalCnt) totalCnt.textContent = (creators.length + filteredCovers.length);
+  if (worksRes) {
+    filteredCovers.forEach(r => { _covCache[r.id] = r; });
+    worksRes.innerHTML = filteredCovers.slice(0, 24).map(covCard).join('');
+  }
+}
+
+function renderCreatorSearchCard(m) {
+  const rawAvatar = m.avatar_url || m.avatar || m.photo_url || m.image_url;
+  const avatarSrc = rawAvatar ? formatImageUrl(rawAvatar) : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(m.name || m.id)}`;
+  const cleanPhone = m.phone ? String(m.phone).replace(/[^0-9+]/g, '') : '';
+  const roleTitle = m.role || 'صانع محتوى ومبدع';
+  const bioText = m.bio ? H(m.bio) : 'مبدع معتمد في شبكة أجيال الإيمان لإنتاج المحتوى الهادف النقي.';
+  
+  return `
+    <div class="team-card creator-search-card" onclick="openCreatorProfile('${m.id}')" style="cursor:pointer;position:relative;border:1.5px solid rgba(252,163,17,0.3);box-shadow:var(--shadow);transition:all 0.22s;" title="انقر لعرض الملف الشخصي وأعمال ${H(m.name)}">
+      <div class="team-avatar" style="position:relative;width:56px;height:56px;flex-shrink:0;">
+        <img src="${avatarSrc}" alt="${H(m.name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid var(--gold);" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(m.id)}'">
+        <span style="position:absolute;bottom:-2px;right:-2px;background:var(--gold);color:var(--navy);font-size:0.65rem;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-weight:900;border:1.5px solid #fff;">✓</span>
+      </div>
+      <div class="team-info" style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          <h4 style="margin:0;font-size:1.02rem;color:var(--navy);font-weight:800;">${H(m.name)}</h4>
+          <span style="background:rgba(252,163,17,0.14);color:var(--navy);font-weight:800;font-size:0.75rem;padding:2px 8px;border-radius:12px;border:1px solid rgba(252,163,17,0.35);">${H(roleTitle)}</span>
+        </div>
+        <p style="font-size:0.8rem;color:var(--muted);margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;">${bioText}</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:0.76rem;font-weight:800;color:var(--gold);">عرض الأعمال والملف 👤 ⟵</span>
+          ${m.phone ? `<a href="https://wa.me/${cleanPhone.replace('+','')}" target="_blank" rel="noopener" class="team-phone-badge" onclick="event.stopPropagation()" title="تواصل عبر الواتساب" style="font-size:0.76rem;padding:3px 9px;">📱 واتساب</a>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function onSearch(v) {
+  clearTimeout(srchT);
+  const q = v.trim();
+  if (!q) {
+    closeSearchDropdown();
+    if (document.getElementById('view-srch').classList.contains('on')) {
+      loadDefaultSmartSearch();
+    }
+    return;
+  }
+  
+  renderSearchDropdownPreview(q);
+  
+  srchT = setTimeout(() => {
+    if (document.getElementById('view-srch').classList.contains('on')) {
+      runSmartSearch(q);
+    }
+  }, 350);
+}
+
+function onSearchFocus() {
+  const val = (document.getElementById('srch').value || '').trim();
+  if (val) {
+    renderSearchDropdownPreview(val);
+  }
+}
+
+function closeSearchDropdown() {
+  const drop = document.getElementById('srch-dropdown');
+  if (drop) drop.classList.remove('open');
+}
+
+document.addEventListener('click', (e) => {
+  const box = document.querySelector('.srch-box');
+  if (box && !box.contains(e.target)) {
+    closeSearchDropdown();
+  }
+});
+
+async function renderSearchDropdownPreview(q) {
+  const drop = document.getElementById('srch-dropdown');
+  if (!drop) return;
+  
+  const normQ = normalizeArabic(q);
+  const terms = normQ.split(/\s+/).filter(Boolean);
+  if (!terms.length) {
+    drop.classList.remove('open');
+    return;
+  }
+  
+  const { creators, covers } = await getSearchData();
+  
+  const matchingCreators = (creators || []).filter(c => {
+    const cName = normalizeArabic(c.name || '');
+    const cRole = normalizeArabic(c.role || '');
+    const cBio = normalizeArabic(c.bio || '');
+    return terms.some(t => cName.includes(t) || cRole.includes(t) || cBio.includes(t));
+  }).slice(0, 4);
+  
+  let matchingWorks = (covers || []).filter(w => {
+    const wTitle = normalizeArabic(w.title || '');
+    const wCreator = normalizeArabic(w.creator_name || '');
+    const wDesc = normalizeArabic(w.description || '');
+    const wSec = normalizeArabic(SECL[w.section_type] || w.section_type || '');
+    
+    let hasMatchingCreator = false;
+    if (Array.isArray(w.creators)) {
+      hasMatchingCreator = w.creators.some(cr =>
+        terms.some(t => normalizeArabic(cr.name || '').includes(t) || normalizeArabic(cr.role || '').includes(t))
+      );
+    }
+    return hasMatchingCreator || terms.some(t => wTitle.includes(t) || wCreator.includes(t) || wSec.includes(t) || wDesc.includes(t));
+  });
+  
+  if (!window.isStaff && curCat !== 'all') {
+    matchingWorks = matchingWorks.filter(c => {
+      if (!c.category) return true;
+      if (Array.isArray(c.category)) return c.category.includes(curCat);
+      return String(c.category).includes(curCat);
+    });
+  }
+  const topWorks = matchingWorks.slice(0, 4);
+  
+  if (!matchingCreators.length && !topWorks.length) {
+    drop.innerHTML = `
+      <div style="padding:16px 14px;text-align:center;color:var(--muted);font-size:0.85rem;">
+        لا توجد نتائج سريعة لـ "<strong>${H(q)}</strong>"<br>
+        <button type="button" onclick="openSmartSearchView('${H(q).replace(/'/g,"\\'")}');" style="margin-top:10px;background:none;border:none;color:var(--gold);font-weight:800;cursor:pointer;font-family:inherit;">
+          البحث الشامل في كل الأقسام 🔍
+        </button>
+      </div>
+    `;
+    drop.classList.add('open');
+    return;
+  }
+  
+  let html = '';
+  
+  if (matchingCreators.length > 0) {
+    html += `<div class="srch-drop-sec-title"><span>✨ صانعو المحتوى والمبدعون</span><span>${matchingCreators.length}</span></div>`;
+    html += matchingCreators.map(m => {
+      const rawAvatar = m.avatar_url || m.avatar || m.photo_url || m.image_url;
+      const avatarSrc = rawAvatar ? formatImageUrl(rawAvatar) : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(m.name || m.id)}`;
+      return `
+        <div class="srch-drop-item" onclick="closeSearchDropdown(); openCreatorProfile('${m.id}');">
+          <img src="${avatarSrc}" alt="${H(m.name)}" class="srch-drop-avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(m.id)}'">
+          <div class="srch-drop-info">
+            <p class="srch-drop-name">${H(m.name)}</p>
+            <p class="srch-drop-sub">⭐ ${H(m.role || 'مبدع')}</p>
+          </div>
+          <span style="font-size:0.75rem;color:var(--gold);font-weight:700;">الملف 👤</span>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  if (topWorks.length > 0) {
+    html += `<div class="srch-drop-sec-title"><span>🎬 الأعمال والقصص</span><span>${matchingWorks.length}</span></div>`;
+    html += topWorks.map(w => {
+      const covUrl = getCoverUrlForCat(w, curCat) || '';
+      return `
+        <div class="srch-drop-item" onclick="closeSearchDropdown(); openDetails('${w.id}');">
+          ${covUrl ? `<img src="${covUrl}" alt="${H(w.title)}" class="srch-drop-thumb">` : `<div class="srch-drop-thumb" style="background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:0.8rem;">📖</div>`}
+          <div class="srch-drop-info">
+            <p class="srch-drop-name">${H(w.title)}</p>
+            <p class="srch-drop-sub">${H(w.creator_name || SECL[w.section_type] || 'أجيال الإيمان')}</p>
+          </div>
+          <span style="font-size:0.72rem;background:var(--bg);color:var(--navy);padding:2px 6px;border-radius:6px;border:1px solid var(--border);">${H(SECL[w.section_type] || 'عمل')}</span>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  const totalMatches = matchingCreators.length + matchingWorks.length;
+  html += `
+    <button type="button" class="srch-drop-all-btn" onclick="openSmartSearchView('${H(q).replace(/'/g,"\\'")}');">
+      عرض كل النتائج (${totalMatches}) في صفحة البحث 🔍
+    </button>
+  `;
+  
+  drop.innerHTML = html;
+  drop.classList.add('open');
+}
+
+async function runSmartSearch(q) {
+  const queryText = document.getElementById('srch-query-text');
+  if (queryText) queryText.innerHTML = `نتائج البحث الذكي عن: "<strong>${H(q)}</strong>"`;
+  
+  const creatorsSec = document.getElementById('srch-creators-sec');
+  const creatorsRes = document.getElementById('srch-creators-res');
+  const creatorsCnt = document.getElementById('srch-creators-cnt');
+  const worksSec = document.getElementById('srch-works-sec');
+  const worksRes = document.getElementById('srch-res');
+  const worksCnt = document.getElementById('srch-works-cnt');
+  const totalCnt = document.getElementById('srch-cnt');
+  
+  if (creatorsRes) creatorsRes.innerHTML = `<div class="st-load" style="grid-column:1/-1"><div class="spin"></div><p>جارٍ فحص حسابات المبدعين…</p></div>`;
+  if (worksRes) worksRes.innerHTML = `<div class="st-load" style="grid-column:1/-1"><div class="spin"></div><p>جارٍ البحث في الأعمال…</p></div>`;
+  
+  const normQ = normalizeArabic(q);
+  const terms = normQ.split(/\s+/).filter(Boolean);
+  
+  const { creators, covers } = await getSearchData();
+  
+  // 1. Filter & Score Creators
+  const scoredCreators = [];
+  (creators || []).forEach(c => {
+    const cName = normalizeArabic(c.name || '');
+    const cRole = normalizeArabic(c.role || '');
+    const cBio = normalizeArabic(c.bio || '');
+    const cPhone = normalizeArabic(c.phone || '');
+    
+    let score = 0;
+    if (cName === normQ) score += 100;
+    else if (cName.includes(normQ)) score += 60;
+    
+    terms.forEach(t => {
+      if (cName.includes(t)) score += 30;
+      if (cRole.includes(t)) score += 35;
+      if (cBio.includes(t)) score += 10;
+      if (cPhone.includes(t)) score += 20;
+    });
+    
+    if (score > 0) {
+      scoredCreators.push({ item: c, score });
+    }
+  });
+  scoredCreators.sort((a, b) => b.score - a.score);
+  const matchedCreators = scoredCreators.map(s => s.item);
+  
+  // 2. Filter & Score Works
+  const scoredWorks = [];
+  (covers || []).forEach(w => {
+    const wTitle = normalizeArabic(w.title || '');
+    const wCreator = normalizeArabic(w.creator_name || '');
+    const wDesc = normalizeArabic(w.description || '');
+    const wSec = normalizeArabic(SECL[w.section_type] || w.section_type || '');
+    
+    let score = 0;
+    if (wTitle === normQ) score += 100;
+    else if (wTitle.startsWith(normQ)) score += 70;
+    else if (wTitle.includes(normQ)) score += 50;
+    
+    if (wCreator.includes(normQ)) score += 45;
+    if (wSec.includes(normQ)) score += 30;
+    
+    terms.forEach(t => {
+      if (wTitle.includes(t)) score += 25;
+      if (wCreator.includes(t)) score += 25;
+      if (wSec.includes(t)) score += 15;
+      if (wDesc.includes(t)) score += 10;
+    });
+    
+    if (Array.isArray(w.creators)) {
+      w.creators.forEach(cr => {
+        const crName = normalizeArabic(cr.name || '');
+        const crRole = normalizeArabic(cr.role || '');
+        if (crName.includes(normQ)) score += 40;
+        terms.forEach(t => {
+          if (crName.includes(t)) score += 20;
+          if (crRole.includes(t)) score += 15;
+        });
+      });
+    }
+    
+    if (score > 0) {
+      scoredWorks.push({ item: w, score });
+    }
+  });
+  scoredWorks.sort((a, b) => b.score - a.score);
+  let matchedWorks = scoredWorks.map(s => s.item);
+  
+  if (!window.isStaff && curCat !== 'all') {
+    matchedWorks = matchedWorks.filter(c => {
+      if (!c.category) return true;
+      if (Array.isArray(c.category)) return c.category.includes(curCat);
+      return String(c.category).includes(curCat);
+    });
+  }
+  if (!window.isStaff && curGender !== 'all') {
+    matchedWorks = matchedWorks.filter(c => {
+      if (!c.target_gender || c.target_gender === 'both' || c.target_gender === 'all') return true;
+      if (curGender === 'boy') return c.target_gender !== 'girls';
+      if (curGender === 'girl') return c.target_gender !== 'boys';
+      return true;
+    });
+  }
+  
+  const totalCount = matchedCreators.length + matchedWorks.length;
+  if (totalCnt) totalCnt.textContent = totalCount;
+  
+  if (matchedCreators.length > 0) {
+    if (creatorsSec) creatorsSec.style.display = 'block';
+    if (creatorsCnt) creatorsCnt.textContent = matchedCreators.length;
+    if (creatorsRes) {
+      creatorsRes.innerHTML = matchedCreators.map(m => renderCreatorSearchCard(m)).join('');
+    }
+  } else {
+    if (creatorsSec) creatorsSec.style.display = 'none';
+    if (creatorsCnt) creatorsCnt.textContent = '0';
+  }
+  
+  if (worksCnt) worksCnt.textContent = matchedWorks.length;
+  if (matchedWorks.length > 0) {
+    if (worksSec) worksSec.style.display = 'block';
+    matchedWorks.forEach(r => { _covCache[r.id] = r; });
+    if (worksRes) worksRes.innerHTML = matchedWorks.map(covCard).join('');
+  } else {
+    if (worksRes) {
+      if (matchedCreators.length > 0) {
+        worksRes.innerHTML = `<div class="st-mt" style="grid-column:1/-1">تم العثور على حسابات المبدعين بالأعلى، ولا توجد أعمال مطابقة مباشرة لهذا العنوان.</div>`;
+      } else {
+        worksRes.innerHTML = `
+          <div class="st-mt" style="grid-column:1/-1;padding:2.5rem 1rem;">
+            <p style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">لا توجد نتائج تطابق "<strong>${H(q)}</strong>"</p>
+            <p style="font-size:0.86rem;color:var(--muted);max-width:400px;margin:0 auto 16px;">جرب البحث باسم المبدع (مثال: معاذ، سامح)، أو نوع المحتوى (أنمي، مانجا، رواية، كورس)...</p>
+            <button class="btn-g" onclick="openSmartSearchView('')" style="display:inline-block;padding:8px 20px;font-size:0.88rem;">استعراض كل المبدعين والإنتاجات ✨</button>
+          </div>
+        `;
+      }
+    }
   }
 }
 
@@ -4600,6 +5532,66 @@ async function loadCreatorWorks(creatorName, creatorId) {
   }
 }
 
+/* ══ MOBILE BOTTOM NAV & SECTIONS SHEET HELPERS ══ */
+function updateMobileNavActive(activeTab) {
+  document.querySelectorAll('.mob-nav-item').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`mob-tab-${activeTab}`);
+  if (btn) btn.classList.add('active');
+}
+
+function toggleSectionsSheet() {
+  const sheet = document.getElementById('sections-bottom-sheet');
+  const backdrop = document.getElementById('sections-sheet-backdrop');
+  if (!sheet) return;
+  const isOpen = sheet.classList.contains('open');
+  if (isOpen) {
+    closeSectionsSheet();
+  } else {
+    openSectionsSheet();
+  }
+}
+
+function openSectionsSheet() {
+  const sheet = document.getElementById('sections-bottom-sheet');
+  const backdrop = document.getElementById('sections-sheet-backdrop');
+  if (sheet) sheet.classList.add('open');
+  if (backdrop) backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSectionsSheet() {
+  const sheet = document.getElementById('sections-bottom-sheet');
+  const backdrop = document.getElementById('sections-sheet-backdrop');
+  if (sheet) sheet.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function openSectionFromSheet(tabKey) {
+  closeSectionsSheet();
+  updateMobileNavActive('sections');
+  curTab = tabKey;
+  if (!currentUser || !userProfile) {
+    curCat = 'all';
+  } else {
+    curCat = userProfile.age_group || 'all';
+    curGender = userProfile.gender || 'boy';
+  }
+  const tabItem = TABS.find(t => t.k === tabKey);
+  const tabTitle = tabItem ? tabItem.l : 'الأقسام';
+  const catLbl = document.getElementById('cat-lbl');
+  if (catLbl) catLbl.textContent = tabTitle;
+  
+  document.getElementById('tabs').innerHTML = TABS.map(t =>
+    `<button class="tab${t.k===curTab?' on':''}" onclick="swTab('${t.k}',this)">${t.l}</button>`
+  ).join('');
+
+  na('nl-c');
+  sv('view-cat');
+  loadTab(curTab);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 window.addEventListener('hashchange', () => {
   const h = window.location.hash;
   if (!h || h === '#home') {
@@ -4611,6 +5603,9 @@ window.addEventListener('hashchange', () => {
     openCovById(id);
   } else if (h === '#about') {
     showAbout();
+  } else if (h === '#search' || h.startsWith('#search/')) {
+    const q = h.startsWith('#search/') ? decodeURIComponent(h.replace('#search/', '')) : '';
+    openSmartSearchView(q);
   } else if (h.startsWith('#creator/')) {
     const cid = h.replace('#creator/', '');
     openCreatorProfile(cid);
@@ -4622,6 +5617,7 @@ window.addEventListener('hashchange', () => {
 
 // App Settings & Boot
 document.getElementById('yr').textContent = new Date().getFullYear();
+document.querySelectorAll('.ab-yr').forEach(el => el.textContent = new Date().getFullYear());
 
 (async () => {
   try {
@@ -4641,7 +5637,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
         if (nl) { nl.src = logoUrl; nl.style.display = 'block'; document.getElementById('nav-logo-ph').style.display = 'none'; }
       }
       const name = data.app_name || data.name || 'أجيال الإيمان';
-      ['nav-name','ft-name','ft-copy-name'].forEach(id => {
+      ['nav-name','ft-name','ft-copy-name','ab-ft-name','ab-copy-name'].forEach(id => {
         const el = document.getElementById(id); if (el) el.textContent = name;
       });
       document.title = name + ' — منصة المحتوى الإسلامي';
@@ -4651,16 +5647,24 @@ document.getElementById('yr').textContent = new Date().getFullYear();
         if (dBtn) dBtn.href = data.donate_link;
         const ftD = document.getElementById('ft-donate');
         if (ftD) ftD.style.display = 'flex';
+        const abD = document.getElementById('ab-ft-donate');
+        if (abD) abD.style.display = 'inline-flex';
       }
       if (data.volunteer_link) {
         const ftV = document.getElementById('ft-volunteer');
         if (ftV) ftV.style.display = 'flex';
+        const abV = document.getElementById('ab-ft-volunteer');
+        if (abV) abV.style.display = 'inline-flex';
       }
       if (data.contact_link) {
         const ftC = document.getElementById('ft-contact');
         if (ftC) { ftC.href = data.contact_link; ftC.style.display = 'flex'; }
+        const abC = document.getElementById('ab-ft-contact');
+        if (abC) { abC.href = data.contact_link; abC.style.display = 'inline-flex'; }
       }
       document.getElementById('ft-acts').style.display = 'flex';
+      const abActs = document.getElementById('ab-ft-acts');
+      if (abActs) abActs.style.display = 'flex';
     }
   } catch(e) {}
 
