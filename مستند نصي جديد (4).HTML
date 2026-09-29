@@ -2867,7 +2867,11 @@ auth.onAuthStateChanged(async (user) => {
 function loginWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).catch((err) => {
-    toast('تعذر تسجيل الدخول بجوجل: ' + err.message);
+    if (err && err.code === 'auth/unauthorized-domain') {
+      toast('تنبيه: يجب إضافة نطاق الموقع (' + window.location.hostname + ') في قائمة Authorized Domains في Firebase');
+    } else {
+      toast('تعذر تسجيل الدخول بجوجل: ' + err.message);
+    }
   });
 }
 
